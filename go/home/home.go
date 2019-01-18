@@ -321,7 +321,8 @@ func (h *Home) OnLogout(m libkb.MetaContext) error {
 }
 
 type updateGregorMessage struct {
-	Version int `json:"version"`
+	Version              int `json:"version"`
+	AnnouncementsVersion int `json:"announcements_version"`
 }
 
 func (h *Home) updateUI(ctx context.Context) (err error) {
@@ -350,11 +351,13 @@ func (h *Home) handleUpdate(ctx context.Context, item gregor.Item) (err error) {
 		h.G().Log.Debug("error unmarshaling home.update item: %s", err.Error())
 		return err
 	}
-	h.G().Log.CDebugf(ctx, "home.update unmarshaled: %+v", msg)
+	h.G().Log.CDebugf(ctx, "home.update unmarshaled: %+v vs (version=%d,announcementsVersion=%d)", msg,
+		h.homeCache.obj.Version, h.homeCache.obj.AnnouncementsVersion)
 
 	h.Lock()
 	defer h.Unlock()
-	if h.homeCache != nil && msg.Version > h.homeCache.obj.Version {
+	if h.homeCache != nil && (msg.Version > h.homeCache.obj.Version || msg.AnnouncementsVersion > h.homeCache.obj.AnnouncementsVersion) {
+		h.G().Log.CDebugf(ctx, "home.update: clearing cache (%d,%d)")
 		h.homeCache = nil
 	}
 
