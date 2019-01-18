@@ -1301,8 +1301,8 @@ func PresentDecoratedTextBody(ctx context.Context, g *globals.Context, msgBody c
 	// escape before applying xforms
 	body = EscapeForDecorate(ctx, body)
 
-	// Payment decorations
 	body = g.StellarSender.DecorateWithPayments(ctx, body, payments)
+	body = DecorateWithURLs(ctx, body)
 	return &body
 }
 
